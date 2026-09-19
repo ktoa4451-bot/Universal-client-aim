@@ -16,19 +16,18 @@ local Settings = {
     AimSpeed = 0.85,
     TeamCheck = true,
     WallCheck = false,
-    TargetPart = "Head",
-    HoldToAim = false
+    TargetPart = "Head"
 }
 
 local Colors = {
     Background = Color3.fromRGB(17, 12, 24),
-    Panel = Color3.fromRGB(24, 17, 34),
-    Purple = Color3.fromRGB(170, 90, 255),
-    PurpleDark = Color3.fromRGB(95, 45, 150),
+    Panel = Color3.fromRGB(25, 18, 35),
+    Purple = Color3.fromRGB(175, 100, 255),
+    PurpleDark = Color3.fromRGB(100, 50, 155),
     Text = Color3.fromRGB(235, 225, 245),
     SubText = Color3.fromRGB(150, 135, 165),
-    Red = Color3.fromRGB(255, 80, 110),
-    Green = Color3.fromRGB(100, 255, 160)
+    Green = Color3.fromRGB(100, 255, 160),
+    Red = Color3.fromRGB(255, 80, 110)
 }
 
 local function GetGuiParent()
@@ -40,10 +39,10 @@ local function GetGuiParent()
         return hui
     end
 
-    local core = game:GetService("CoreGui")
+    local CoreGui = game:GetService("CoreGui")
 
-    if core then
-        return core
+    if CoreGui then
+        return CoreGui
     end
 
     return LocalPlayer:WaitForChild("PlayerGui")
@@ -100,7 +99,7 @@ local TopBar = Instance.new("Frame")
 TopBar.Name = "TopBar"
 TopBar.Size = UDim2.new(1, 0, 0, 65)
 TopBar.BackgroundTransparency = 1
-TopBar.ZIndex = 5
+TopBar.ZIndex = 10
 TopBar.Parent = Main
 
 local LogoButton = Instance.new("TextButton")
@@ -114,7 +113,7 @@ LogoButton.TextSize = 29
 LogoButton.Font = Enum.Font.GothamBold
 LogoButton.TextColor3 = Color3.fromRGB(190, 145, 255)
 LogoButton.AutoButtonColor = false
-LogoButton.ZIndex = 10
+LogoButton.ZIndex = 20
 LogoButton.Parent = TopBar
 
 local Title = Instance.new("TextLabel")
@@ -127,7 +126,7 @@ Title.TextColor3 = Colors.Text
 Title.TextSize = 17
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.ZIndex = 10
+Title.ZIndex = 20
 Title.Parent = TopBar
 
 local Subtitle = Instance.new("TextLabel")
@@ -140,7 +139,7 @@ Subtitle.TextColor3 = Colors.SubText
 Subtitle.TextSize = 10
 Subtitle.Font = Enum.Font.Gotham
 Subtitle.TextXAlignment = Enum.TextXAlignment.Left
-Subtitle.ZIndex = 10
+Subtitle.ZIndex = 20
 Subtitle.Parent = TopBar
 
 local MinimizeButton = Instance.new("TextButton")
@@ -148,12 +147,13 @@ MinimizeButton.Name = "MinimizeButton"
 MinimizeButton.Size = UDim2.new(0, 34, 0, 34)
 MinimizeButton.Position = UDim2.new(1, -75, 0.5, -17)
 MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.BorderSizePixel = 0
 MinimizeButton.Text = "—"
 MinimizeButton.TextColor3 = Color3.fromRGB(200, 180, 220)
 MinimizeButton.TextSize = 22
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.AutoButtonColor = false
-MinimizeButton.ZIndex = 10
+MinimizeButton.ZIndex = 20
 MinimizeButton.Parent = TopBar
 
 local CloseButton = Instance.new("TextButton")
@@ -161,19 +161,38 @@ CloseButton.Name = "CloseButton"
 CloseButton.Size = UDim2.new(0, 34, 0, 34)
 CloseButton.Position = UDim2.new(1, -40, 0.5, -17)
 CloseButton.BackgroundTransparency = 1
+CloseButton.BorderSizePixel = 0
 CloseButton.Text = "×"
 CloseButton.TextColor3 = Color3.fromRGB(200, 180, 220)
 CloseButton.TextSize = 24
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.AutoButtonColor = false
-CloseButton.ZIndex = 10
+CloseButton.ZIndex = 20
 CloseButton.Parent = TopBar
+
+local Content = Instance.new("Frame")
+Content.Name = "Content"
+Content.Position = UDim2.new(0, 15, 0, 78)
+Content.Size = UDim2.new(1, -30, 1, -90)
+Content.BackgroundTransparency = 1
+Content.ZIndex = 5
+Content.Parent = Main
+
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Padding = UDim.new(0, 8)
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ContentLayout.Parent = Content
 
 local FOVCircle = Instance.new("Frame")
 FOVCircle.Name = "FOVCircle"
 FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
 FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-FOVCircle.Size = UDim2.new(0, Settings.FOV * 2, 0, Settings.FOV * 2)
+FOVCircle.Size = UDim2.new(
+    0,
+    Settings.FOV * 2,
+    0,
+    Settings.FOV * 2
+)
 FOVCircle.BackgroundTransparency = 1
 FOVCircle.BorderSizePixel = 0
 FOVCircle.ZIndex = 2
@@ -189,7 +208,20 @@ FOVStroke.Thickness = 1.5
 FOVStroke.Transparency = 0.25
 FOVStroke.Parent = FOVCircle
 
-local IsOpening = true
+local CenterDot = Instance.new("Frame")
+CenterDot.Name = "CenterDot"
+CenterDot.AnchorPoint = Vector2.new(0.5, 0.5)
+CenterDot.Position = UDim2.new(0.5, 0, 0.5, 0)
+CenterDot.Size = UDim2.new(0, 5, 0, 5)
+CenterDot.BackgroundColor3 = Colors.Purple
+CenterDot.BackgroundTransparency = 0.1
+CenterDot.BorderSizePixel = 0
+CenterDot.ZIndex = 5
+CenterDot.Parent = FOVCircle
+
+local CenterCorner = Instance.new("UICorner")
+CenterCorner.CornerRadius = UDim.new(1, 0)
+CenterCorner.Parent = CenterDot
 
 Main.Size = UDim2.new(0, 0, 0, 0)
 
@@ -210,55 +242,41 @@ task.spawn(function()
         TweenService:Create(
             LogoButton,
             TweenInfo.new(
-                1.1,
+                1,
                 Enum.EasingStyle.Sine,
                 Enum.EasingDirection.InOut
             ),
             {
-                Rotation = 12,
-                TextColor3 = Color3.fromRGB(215, 180, 255)
+                TextColor3 = Color3.fromRGB(220, 180, 255),
+                Rotation = 8
             }
         ):Play()
 
-        task.wait(1.1)
+        task.wait(1)
 
         TweenService:Create(
             LogoButton,
             TweenInfo.new(
-                1.1,
+                1,
                 Enum.EasingStyle.Sine,
                 Enum.EasingDirection.InOut
             ),
             {
-                Rotation = -12,
-                TextColor3 = Color3.fromRGB(175, 125, 245)
+                TextColor3 = Color3.fromRGB(175, 125, 240),
+                Rotation = -8
             }
         ):Play()
 
-        task.wait(1.1)
+        task.wait(1)
     end
 end)
 
-print("Lunar Aim Assist UI initialized")
-
 --========================================
--- PART 2 - CONTROLS / FOV
+-- PART 2 - CONTROLS / DRAG
 --========================================
-
-local Content = Instance.new("Frame")
-Content.Name = "Content"
-Content.Position = UDim2.new(0, 15, 0, 78)
-Content.Size = UDim2.new(1, -30, 1, -90)
-Content.BackgroundTransparency = 1
-Content.ZIndex = 5
-Content.Parent = Main
-
-local ContentLayout = Instance.new("UIListLayout")
-ContentLayout.Padding = UDim.new(0, 8)
-ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ContentLayout.Parent = Content
 
 local function CreateControlButton(name, text, order)
+
     local Button = Instance.new("TextButton")
     Button.Name = name
     Button.Size = UDim2.new(1, 0, 0, 43)
@@ -285,12 +303,13 @@ local function CreateControlButton(name, text, order)
     Stroke.Parent = Button
 
     Button.MouseEnter:Connect(function()
+
         TweenService:Create(
             Button,
-            TweenInfo.new(0.15, Enum.EasingStyle.Quad),
+            TweenInfo.new(0.15),
             {
-                BackgroundColor3 = Color3.fromRGB(35, 24, 48),
-                Size = UDim2.new(1, 4, 0, 43)
+                BackgroundColor3 =
+                    Color3.fromRGB(35, 24, 48)
             }
         ):Play()
 
@@ -305,12 +324,12 @@ local function CreateControlButton(name, text, order)
     end)
 
     Button.MouseLeave:Connect(function()
+
         TweenService:Create(
             Button,
-            TweenInfo.new(0.15, Enum.EasingStyle.Quad),
+            TweenInfo.new(0.15),
             {
-                BackgroundColor3 = Colors.Panel,
-                Size = UDim2.new(1, 0, 0, 43)
+                BackgroundColor3 = Colors.Panel
             }
         ):Play()
 
@@ -325,6 +344,7 @@ local function CreateControlButton(name, text, order)
     end)
 
     Button.MouseButton1Down:Connect(function()
+
         TweenService:Create(
             Button,
             TweenInfo.new(0.08),
@@ -335,9 +355,14 @@ local function CreateControlButton(name, text, order)
     end)
 
     Button.MouseButton1Up:Connect(function()
+
         TweenService:Create(
             Button,
-            TweenInfo.new(0.12, Enum.EasingStyle.Back),
+            TweenInfo.new(
+                0.12,
+                Enum.EasingStyle.Back,
+                Enum.EasingDirection.Out
+            ),
             {
                 Size = UDim2.new(1, 0, 0, 43)
             }
@@ -361,43 +386,46 @@ local FOVButton = CreateControlButton(
 
 local SpeedButton = CreateControlButton(
     "SpeedButton",
-    "Aim Speed: " .. math.floor(Settings.AimSpeed * 100) .. "%",
+    "Aim Speed: " ..
+    math.floor(Settings.AimSpeed * 100) ..
+    "%",
     3
 )
 
 local TeamButton = CreateControlButton(
     "TeamButton",
-    "Team Check: " .. (Settings.TeamCheck and "ON" or "OFF"),
+    "Team Check: ON",
     4
 )
 
 local WallButton = CreateControlButton(
     "WallButton",
-    "Wall Check: " .. (Settings.WallCheck and "ON" or "OFF"),
+    "Wall Check: OFF",
     5
 )
 
 local TargetButton = CreateControlButton(
     "TargetButton",
-    "Target: " .. Settings.TargetPart,
+    "Target: Head",
     6
 )
 
 AimButton.MouseButton1Click:Connect(function()
+
     Settings.Enabled = not Settings.Enabled
 
     AimButton.Text =
         "Aim Assist: " ..
         (Settings.Enabled and "ON" or "OFF")
 
-    if Settings.Enabled then
-        AimButton.TextColor3 = Colors.Green
-    else
-        AimButton.TextColor3 = Colors.Text
-    end
+    AimButton.TextColor3 =
+        Settings.Enabled
+        and Colors.Green
+        or Colors.Text
 end)
 
 FOVButton.MouseButton1Click:Connect(function()
+
     local values = {
         100,
         140,
@@ -407,24 +435,25 @@ FOVButton.MouseButton1Click:Connect(function()
         320
     }
 
-    local currentIndex = 1
+    local index = 1
 
     for i, value in ipairs(values) do
         if value == Settings.FOV then
-            currentIndex = i
+            index = i
             break
         end
     end
 
-    currentIndex += 1
+    index += 1
 
-    if currentIndex > #values then
-        currentIndex = 1
+    if index > #values then
+        index = 1
     end
 
-    Settings.FOV = values[currentIndex]
+    Settings.FOV = values[index]
 
-    FOVButton.Text = "FOV: " .. Settings.FOV
+    FOVButton.Text =
+        "FOV: " .. Settings.FOV
 
     TweenService:Create(
         FOVCircle,
@@ -445,6 +474,7 @@ FOVButton.MouseButton1Click:Connect(function()
 end)
 
 SpeedButton.MouseButton1Click:Connect(function()
+
     local values = {
         0.35,
         0.50,
@@ -454,22 +484,22 @@ SpeedButton.MouseButton1Click:Connect(function()
         1
     }
 
-    local currentIndex = 1
+    local index = 1
 
     for i, value in ipairs(values) do
         if value == Settings.AimSpeed then
-            currentIndex = i
+            index = i
             break
         end
     end
 
-    currentIndex += 1
+    index += 1
 
-    if currentIndex > #values then
-        currentIndex = 1
+    if index > #values then
+        index = 1
     end
 
-    Settings.AimSpeed = values[currentIndex]
+    Settings.AimSpeed = values[index]
 
     SpeedButton.Text =
         "Aim Speed: " ..
@@ -478,34 +508,35 @@ SpeedButton.MouseButton1Click:Connect(function()
 end)
 
 TeamButton.MouseButton1Click:Connect(function()
+
     Settings.TeamCheck = not Settings.TeamCheck
 
     TeamButton.Text =
         "Team Check: " ..
         (Settings.TeamCheck and "ON" or "OFF")
 
-    if Settings.TeamCheck then
-        TeamButton.TextColor3 = Colors.Green
-    else
-        TeamButton.TextColor3 = Colors.Text
-    end
+    TeamButton.TextColor3 =
+        Settings.TeamCheck
+        and Colors.Green
+        or Colors.Text
 end)
 
 WallButton.MouseButton1Click:Connect(function()
+
     Settings.WallCheck = not Settings.WallCheck
 
     WallButton.Text =
         "Wall Check: " ..
         (Settings.WallCheck and "ON" or "OFF")
 
-    if Settings.WallCheck then
-        WallButton.TextColor3 = Colors.Green
-    else
-        WallButton.TextColor3 = Colors.Text
-    end
+    WallButton.TextColor3 =
+        Settings.WallCheck
+        and Colors.Green
+        or Colors.Text
 end)
 
 TargetButton.MouseButton1Click:Connect(function()
+
     if Settings.TargetPart == "Head" then
         Settings.TargetPart = "HumanoidRootPart"
     else
@@ -517,13 +548,24 @@ TargetButton.MouseButton1Click:Connect(function()
         Settings.TargetPart
 end)
 
+--========================================
+-- MAIN WINDOW DRAG
+--========================================
+
 local Dragging = false
-local DragStart
-local StartPosition
+local DragStart = nil
+local StartPosition = nil
 
 TopBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
+
+    if IsMinimized then
+        return
+    end
+
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+    or input.UserInputType ==
+        Enum.UserInputType.Touch then
 
         Dragging = true
         DragStart = input.Position
@@ -532,24 +574,31 @@ TopBar.InputBegan:Connect(function(input)
 end)
 
 TopBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
+
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+    or input.UserInputType ==
+        Enum.UserInputType.Touch then
 
         Dragging = false
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
+
     if not Dragging then
         return
     end
 
-    if input.UserInputType ~= Enum.UserInputType.MouseMovement
-    and input.UserInputType ~= Enum.UserInputType.Touch then
+    if input.UserInputType ~=
+        Enum.UserInputType.MouseMovement
+    and input.UserInputType ~=
+        Enum.UserInputType.Touch then
         return
     end
 
-    local Delta = input.Position - DragStart
+    local Delta =
+        input.Position - DragStart
 
     Main.Position = UDim2.new(
         StartPosition.X.Scale,
@@ -559,8 +608,14 @@ UserInputService.InputChanged:Connect(function(input)
     )
 end)
 
+--========================================
+-- FOV ANIMATION
+--========================================
+
 task.spawn(function()
+
     while ScreenGui.Parent do
+
         TweenService:Create(
             FOVStroke,
             TweenInfo.new(
@@ -571,6 +626,18 @@ task.spawn(function()
             {
                 Transparency = 0.55,
                 Thickness = 2
+            }
+        ):Play()
+
+        TweenService:Create(
+            CenterDot,
+            TweenInfo.new(
+                0.8,
+                Enum.EasingStyle.Sine,
+                Enum.EasingDirection.InOut
+            ),
+            {
+                Size = UDim2.new(0, 8, 0, 8)
             }
         ):Play()
 
@@ -589,15 +656,28 @@ task.spawn(function()
             }
         ):Play()
 
+        TweenService:Create(
+            CenterDot,
+            TweenInfo.new(
+                0.8,
+                Enum.EasingStyle.Sine,
+                Enum.EasingDirection.InOut
+            ),
+            {
+                Size = UDim2.new(0, 5, 0, 5)
+            }
+        ):Play()
+
         task.wait(0.8)
     end
 end)
 
 --========================================
--- PART 3 - TARGET SYSTEM / AIM
+-- PART 3 - TARGET / TEAM CHECK / MINIMIZE
 --========================================
 
 local function IsEnemy(player)
+
     if not player or player == LocalPlayer then
         return false
     end
@@ -606,30 +686,47 @@ local function IsEnemy(player)
         return true
     end
 
-    if LocalPlayer.Team == nil or player.Team == nil then
-        return true
+    -- Normal Roblox team check
+    if LocalPlayer.Team ~= nil
+    and player.Team ~= nil then
+
+        return LocalPlayer.Team ~= player.Team
     end
 
-    return player.Team ~= LocalPlayer.Team
+    -- TeamColor fallback
+    if LocalPlayer.TeamColor ~= nil
+    and player.TeamColor ~= nil then
+
+        return LocalPlayer.TeamColor ~= player.TeamColor
+    end
+
+    -- If the game has no team information,
+    -- don't incorrectly classify everyone
+    -- as a teammate.
+    return true
 end
 
 local function IsAlive(player)
+
     if not player then
         return false
     end
 
     local character = player.Character
+
     if not character then
         return false
     end
 
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local humanoid =
+        character:FindFirstChildOfClass("Humanoid")
 
     return humanoid ~= nil
         and humanoid.Health > 0
 end
 
 local function CanSeePart(part)
+
     if not Settings.WallCheck then
         return true
     end
@@ -638,74 +735,110 @@ local function CanSeePart(part)
         return false
     end
 
-    local origin = Camera.CFrame.Position
-    local direction = part.Position - origin
+    local origin =
+        Camera.CFrame.Position
 
-    local params = RaycastParams.new()
-    params.FilterType = Enum.RaycastFilterType.Exclude
+    local direction =
+        part.Position - origin
+
+    local params =
+        RaycastParams.new()
+
+    params.FilterType =
+        Enum.RaycastFilterType.Exclude
+
     params.FilterDescendantsInstances = {
         LocalPlayer.Character,
         Camera
     }
+
     params.IgnoreWater = true
 
-    local result = workspace:Raycast(
-        origin,
-        direction,
-        params
-    )
+    local result =
+        workspace:Raycast(
+            origin,
+            direction,
+            params
+        )
 
     if not result then
         return true
     end
 
-    return result.Instance:IsDescendantOf(part.Parent)
+    return result.Instance:IsDescendantOf(
+        part.Parent
+    )
 end
 
 local function GetTargetPart(character)
+
     if not character then
         return nil
     end
 
-    local preferred = character:FindFirstChild(
-        Settings.TargetPart
-    )
+    local preferred =
+        character:FindFirstChild(
+            Settings.TargetPart
+        )
 
     if preferred then
         return preferred
     end
 
-    return character:FindFirstChild("HumanoidRootPart")
-        or character:FindFirstChild("Head")
+    return character:FindFirstChild("Head")
+        or character:FindFirstChild(
+            "HumanoidRootPart"
+        )
 end
 
 local function GetClosestTarget()
+
     local closestPlayer = nil
     local closestPart = nil
     local closestDistance = Settings.FOV
 
-    local viewportSize = Camera.ViewportSize
-    local screenCenter = Vector2.new(
-        viewportSize.X / 2,
-        viewportSize.Y / 2
+    Camera = workspace.CurrentCamera
+
+    if not Camera then
+        return nil, nil
+    end
+
+    local viewport =
+        Camera.ViewportSize
+
+    local center = Vector2.new(
+        viewport.X / 2,
+        viewport.Y / 2
     )
 
-    for _, player in ipairs(Players:GetPlayers()) do
-        if IsEnemy(player) and IsAlive(player) then
+    for _, player in ipairs(
+        Players:GetPlayers()
+    ) do
 
-            local part = GetTargetPart(player.Character)
+        if IsEnemy(player)
+        and IsAlive(player) then
+
+            local part =
+                GetTargetPart(
+                    player.Character
+                )
 
             if part then
-                local screenPosition, visible =
-                    Camera:WorldToViewportPoint(part.Position)
 
-                if visible and screenPosition.Z > 0 then
-                    local distance = (
-                        Vector2.new(
-                            screenPosition.X,
-                            screenPosition.Y
-                        ) - screenCenter
-                    ).Magnitude
+                local position, visible =
+                    Camera:WorldToViewportPoint(
+                        part.Position
+                    )
+
+                if visible and position.Z > 0 then
+
+                    local distance =
+                        (
+                            Vector2.new(
+                                position.X,
+                                position.Y
+                            ) - center
+                        ).Magnitude
 
                     if distance <= closestDistance
                     and CanSeePart(part) then
@@ -722,24 +855,6 @@ local function GetClosestTarget()
     return closestPlayer, closestPart
 end
 
-local RightMouseDown = false
-
-UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then
-        return
-    end
-
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        RightMouseDown = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton2 then
-        RightMouseDown = false
-    end
-end)
-
 local TargetIndicator = Instance.new("Frame")
 TargetIndicator.Name = "TargetIndicator"
 TargetIndicator.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -750,166 +865,128 @@ TargetIndicator.BorderSizePixel = 0
 TargetIndicator.ZIndex = 20
 TargetIndicator.Parent = ScreenGui
 
-local TargetIndicatorCorner = Instance.new("UICorner")
-TargetIndicatorCorner.CornerRadius = UDim.new(1, 0)
-TargetIndicatorCorner.Parent = TargetIndicator
+local TargetCorner = Instance.new("UICorner")
+TargetCorner.CornerRadius = UDim.new(1, 0)
+TargetCorner.Parent = TargetIndicator
 
-local TargetIndicatorStroke = Instance.new("UIStroke")
-TargetIndicatorStroke.Color = Colors.Purple
-TargetIndicatorStroke.Thickness = 2
-TargetIndicatorStroke.Transparency = 1
-TargetIndicatorStroke.Parent = TargetIndicator
-
-local function UpdateVisualState()
-    if Settings.Enabled then
-        AimButton.Text =
-            "Aim Assist: ON"
-
-        AimButton.TextColor3 = Colors.Green
-    else
-        AimButton.Text =
-            "Aim Assist: OFF"
-
-        AimButton.TextColor3 = Colors.Text
-    end
-
-    TeamButton.Text =
-        "Team Check: " ..
-        (Settings.TeamCheck and "ON" or "OFF")
-
-    TeamButton.TextColor3 =
-        Settings.TeamCheck
-        and Colors.Green
-        or Colors.Text
-
-    WallButton.Text =
-        "Wall Check: " ..
-        (Settings.WallCheck and "ON" or "OFF")
-
-    WallButton.TextColor3 =
-        Settings.WallCheck
-        and Colors.Green
-        or Colors.Text
-end
-
-AimButton.MouseButton1Click:Connect(function()
-    UpdateVisualState()
-end)
+local TargetStroke = Instance.new("UIStroke")
+TargetStroke.Color = Colors.Purple
+TargetStroke.Thickness = 2
+TargetStroke.Transparency = 1
+TargetStroke.Parent = TargetIndicator
 
 RunService:BindToRenderStep(
     "LunarAimAssist",
     Enum.RenderPriority.Camera.Value + 1,
     function()
+
+        Camera = workspace.CurrentCamera
+
         if not Camera then
-            Camera = workspace.CurrentCamera
-        end
-
-        local viewportSize = Camera.ViewportSize
-
-        FOVCircle.Position = UDim2.new(
-            0,
-            viewportSize.X / 2,
-            0,
-            viewportSize.Y / 2
-        )
-
-        if not Settings.Enabled then
-            TargetIndicator.BackgroundTransparency = 1
-            TargetIndicatorStroke.Transparency = 1
             return
         end
 
-        if Settings.HoldToAim and not RightMouseDown then
+        local viewport =
+            Camera.ViewportSize
+
+        FOVCircle.Position = UDim2.new(
+            0,
+            viewport.X / 2,
+            0,
+            viewport.Y / 2
+        )
+
+        if not Settings.Enabled then
+
             TargetIndicator.BackgroundTransparency = 1
-            TargetIndicatorStroke.Transparency = 1
+            TargetStroke.Transparency = 1
+
             return
         end
 
         local targetPlayer, targetPart =
             GetClosestTarget()
 
-        if not targetPlayer or not targetPart then
+        if not targetPlayer
+        or not targetPart then
+
             TargetIndicator.BackgroundTransparency = 1
-            TargetIndicatorStroke.Transparency = 1
+            TargetStroke.Transparency = 1
+
             return
         end
 
-        local screenPosition, visible =
+        local position, visible =
             Camera:WorldToViewportPoint(
                 targetPart.Position
             )
 
-        if not visible or screenPosition.Z <= 0 then
+        if not visible
+        or position.Z <= 0 then
+
             TargetIndicator.BackgroundTransparency = 1
-            TargetIndicatorStroke.Transparency = 1
+            TargetStroke.Transparency = 1
+
             return
         end
 
-        TargetIndicator.Position = UDim2.new(
-            0,
-            screenPosition.X,
-            0,
-            screenPosition.Y
-        )
+        TargetIndicator.Position =
+            UDim2.new(
+                0,
+                position.X,
+                0,
+                position.Y
+            )
 
         TargetIndicator.BackgroundTransparency = 0.15
-        TargetIndicatorStroke.Transparency = 0
+        TargetStroke.Transparency = 0
 
-        local cameraPosition = Camera.CFrame.Position
+        local cameraPosition =
+            Camera.CFrame.Position
 
-        local desiredCFrame = CFrame.lookAt(
-            cameraPosition,
-            targetPart.Position
-        )
-
-        Camera.CFrame = Camera.CFrame:Lerp(
-            desiredCFrame,
-            math.clamp(
-                Settings.AimSpeed,
-                0,
-                1
+        local desired =
+            CFrame.lookAt(
+                cameraPosition,
+                targetPart.Position
             )
-        )
+
+        Camera.CFrame =
+            Camera.CFrame:Lerp(
+                desired,
+                math.clamp(
+                    Settings.AimSpeed,
+                    0,
+                    1
+                )
+            )
     end
 )
 
-UpdateVisualState()
-
 --========================================
--- PART 4 - MINIMIZE / RESTORE / CLEANUP
+-- MINIMIZE / RESTORE
 --========================================
 
 local IsMinimized = false
 local Closing = false
 
-local FullSize = UDim2.new(0, 330, 0, 410)
-local MiniSize = UDim2.new(0, 64, 0, 64)
+local FullSize =
+    UDim2.new(0, 330, 0, 410)
+
+local MiniSize =
+    UDim2.new(0, 64, 0, 64)
 
 local function SetContentVisible(state)
-    if Content then
-        Content.Visible = state
-    end
 
-    if Subtitle then
-        Subtitle.Visible = state
-    end
+    Content.Visible = state
 
-    if Title then
-        Title.Visible = state
-    end
-
-    if CloseButton then
-        CloseButton.Visible = state
-    end
-
-    if not state then
-        MinimizeButton.Visible = false
-    else
-        MinimizeButton.Visible = true
-    end
+    Title.Visible = state
+    Subtitle.Visible = state
+    CloseButton.Visible = state
+    MinimizeButton.Visible = state
 end
 
 local function MinimizeMenu()
+
     if IsMinimized or Closing then
         return
     end
@@ -917,6 +994,10 @@ local function MinimizeMenu()
     IsMinimized = true
 
     SetContentVisible(false)
+
+    -- TopBar becomes the complete mini window
+    TopBar.Size =
+        UDim2.new(1, 0, 1, 0)
 
     TweenService:Create(
         Main,
@@ -933,19 +1014,34 @@ local function MinimizeMenu()
     TweenService:Create(
         LogoButton,
         TweenInfo.new(
-            0.4,
+            0.45,
             Enum.EasingStyle.Back,
             Enum.EasingDirection.Out
         ),
         {
-            Size = UDim2.new(0, 52, 0, 52),
-            Position = UDim2.new(0.5, -26, 0.5, -26),
+            Position =
+                UDim2.new(
+                    0.5,
+                    -26,
+                    0.5,
+                    -26
+                ),
+
+            Size =
+                UDim2.new(
+                    0,
+                    52,
+                    0,
+                    52
+                ),
+
             TextSize = 32
         }
     ):Play()
 end
 
 local function RestoreMenu()
+
     if not IsMinimized or Closing then
         return
     end
@@ -972,60 +1068,161 @@ local function RestoreMenu()
             Enum.EasingDirection.Out
         ),
         {
-            Size = UDim2.new(0, 42, 0, 42),
-            Position = UDim2.new(0, 12, 0.5, -21),
+            Position =
+                UDim2.new(
+                    0,
+                    12,
+                    0.5,
+                    -21
+                ),
+
+            Size =
+                UDim2.new(
+                    0,
+                    42,
+                    0,
+                    42
+                ),
+
             TextSize = 29
         }
     ):Play()
 
     task.delay(0.2, function()
-        if not Closing then
-            SetContentVisible(true)
+
+        if Closing then
+            return
         end
+
+        TopBar.Size =
+            UDim2.new(
+                1,
+                0,
+                0,
+                65
+            )
+
+        SetContentVisible(true)
     end)
 end
 
-MinimizeButton.MouseButton1Click:Connect(function()
-    MinimizeMenu()
-end)
+MinimizeButton.MouseButton1Click:Connect(
+    MinimizeMenu
+)
 
 LogoButton.MouseButton1Click:Connect(function()
+
     if IsMinimized then
         RestoreMenu()
     end
 end)
 
+--========================================
+-- MINI WINDOW DRAG
+--========================================
+
+local MiniDragging = false
+local MiniDragStart = nil
+local MiniStartPosition = nil
+
+TopBar.InputBegan:Connect(function(input)
+
+    if not IsMinimized then
+        return
+    end
+
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+    or input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        MiniDragging = true
+        MiniDragStart = input.Position
+        MiniStartPosition = Main.Position
+    end
+end)
+
+TopBar.InputEnded:Connect(function(input)
+
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+    or input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        MiniDragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+    if not IsMinimized
+    or not MiniDragging then
+        return
+    end
+
+    if input.UserInputType ~=
+        Enum.UserInputType.MouseMovement
+    and input.UserInputType ~=
+        Enum.UserInputType.Touch then
+        return
+    end
+
+    local delta =
+        input.Position - MiniDragStart
+
+    Main.Position = UDim2.new(
+        MiniStartPosition.X.Scale,
+        MiniStartPosition.X.Offset + delta.X,
+
+        MiniStartPosition.Y.Scale,
+        MiniStartPosition.Y.Offset + delta.Y
+    )
+end)
+
+--========================================
+-- BUTTON EFFECTS
+--========================================
+
 LogoButton.MouseEnter:Connect(function()
+
     TweenService:Create(
         LogoButton,
-        TweenInfo.new(
-            0.18,
-            Enum.EasingStyle.Quad,
-            Enum.EasingDirection.Out
-        ),
+        TweenInfo.new(0.15),
         {
-            TextSize = IsMinimized and 36 or 32,
-            TextColor3 = Color3.fromRGB(220, 185, 255)
+            TextSize =
+                IsMinimized and 36 or 32,
+
+            TextColor3 =
+                Color3.fromRGB(
+                    225,
+                    190,
+                    255
+                )
         }
     ):Play()
 end)
 
 LogoButton.MouseLeave:Connect(function()
+
     TweenService:Create(
         LogoButton,
-        TweenInfo.new(
-            0.18,
-            Enum.EasingStyle.Quad,
-            Enum.EasingDirection.Out
-        ),
+        TweenInfo.new(0.15),
         {
-            TextSize = IsMinimized and 32 or 29,
-            TextColor3 = Color3.fromRGB(190, 145, 255)
+            TextSize =
+                IsMinimized and 32 or 29,
+
+            TextColor3 =
+                Color3.fromRGB(
+                    190,
+                    145,
+                    255
+                )
         }
     ):Play()
 end)
 
 MinimizeButton.MouseEnter:Connect(function()
+
     TweenService:Create(
         MinimizeButton,
         TweenInfo.new(0.15),
@@ -1037,17 +1234,25 @@ MinimizeButton.MouseEnter:Connect(function()
 end)
 
 MinimizeButton.MouseLeave:Connect(function()
+
     TweenService:Create(
         MinimizeButton,
         TweenInfo.new(0.15),
         {
-            TextColor3 = Color3.fromRGB(200, 180, 220),
+            TextColor3 =
+                Color3.fromRGB(
+                    200,
+                    180,
+                    220
+                ),
+
             TextSize = 22
         }
     ):Play()
 end)
 
 CloseButton.MouseEnter:Connect(function()
+
     TweenService:Create(
         CloseButton,
         TweenInfo.new(0.15),
@@ -1059,17 +1264,29 @@ CloseButton.MouseEnter:Connect(function()
 end)
 
 CloseButton.MouseLeave:Connect(function()
+
     TweenService:Create(
         CloseButton,
         TweenInfo.new(0.15),
         {
-            TextColor3 = Color3.fromRGB(200, 180, 220),
+            TextColor3 =
+                Color3.fromRGB(
+                    200,
+                    180,
+                    220
+                ),
+
             TextSize = 24
         }
     ):Play()
 end)
 
+--========================================
+-- CLOSE / CLEANUP
+--========================================
+
 CloseButton.MouseButton1Click:Connect(function()
+
     if Closing then
         return
     end
@@ -1090,15 +1307,8 @@ CloseButton.MouseButton1Click:Connect(function()
             Enum.EasingDirection.In
         ),
         {
-            Size = UDim2.new(0, 0, 0, 0)
-        }
-    ):Play()
-
-    TweenService:Create(
-        FOVCircle,
-        TweenInfo.new(0.25),
-        {
-            BackgroundTransparency = 1
+            Size =
+                UDim2.new(0, 0, 0, 0)
         }
     ):Play()
 
@@ -1117,103 +1327,11 @@ CloseButton.MouseButton1Click:Connect(function()
     end
 end)
 
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-    or input.UserInputType == Enum.UserInputType.Touch then
-
-        if IsMinimized then
-            local mousePosition =
-                UserInputService:GetMouseLocation()
-
-            local mainPosition =
-                Main.AbsolutePosition
-
-            local mainSize =
-                Main.AbsoluteSize
-
-            local inside =
-                mousePosition.X >= mainPosition.X
-                and mousePosition.X <=
-                    mainPosition.X + mainSize.X
-                and mousePosition.Y >= mainPosition.Y
-                and mousePosition.Y <=
-                    mainPosition.Y + mainSize.Y
-
-            if inside then
-                RestoreMenu()
-            end
-        end
-    end
-end)
-
-task.spawn(function()
-    while ScreenGui.Parent do
-        if not IsMinimized then
-            TweenService:Create(
-                LogoButton,
-                TweenInfo.new(
-                    0.8,
-                    Enum.EasingStyle.Sine,
-                    Enum.EasingDirection.InOut
-                ),
-                {
-                    TextColor3 =
-                        Color3.fromRGB(220, 180, 255)
-                }
-            ):Play()
-
-            task.wait(0.8)
-
-            TweenService:Create(
-                LogoButton,
-                TweenInfo.new(
-                    0.8,
-                    Enum.EasingStyle.Sine,
-                    Enum.EasingDirection.InOut
-                ),
-                {
-                    TextColor3 =
-                        Color3.fromRGB(175, 125, 240)
-                }
-            ):Play()
-
-            task.wait(0.8)
-        else
-            TweenService:Create(
-                LogoButton,
-                TweenInfo.new(
-                    0.7,
-                    Enum.EasingStyle.Sine,
-                    Enum.EasingDirection.InOut
-                ),
-                {
-                    Rotation = 10
-                }
-            ):Play()
-
-            task.wait(0.7)
-
-            TweenService:Create(
-                LogoButton,
-                TweenInfo.new(
-                    0.7,
-                    Enum.EasingStyle.Sine,
-                    Enum.EasingDirection.InOut
-                ),
-                {
-                    Rotation = -10
-                }
-            ):Play()
-
-            task.wait(0.7)
-        end
-    end
-end)
-
 print("========================================")
-print("Lunar Aim Assist")
-print("PART 3 + PART 4 loaded")
-print("Team Check: FIXED")
-print("Minimize: FIXED")
-print("Moon Logo: FIXED")
+print("Lunar Aim Assist loaded")
+print("Visible FOV: ON")
+print("Team Check: ON")
+print("Wall Check: OFF")
+print("Minimize: READY")
+print("Moon Logo: READY")
 print("========================================")
