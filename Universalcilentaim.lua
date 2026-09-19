@@ -1335,3 +1335,105 @@ print("Wall Check: OFF")
 print("Minimize: READY")
 print("Moon Logo: READY")
 print("========================================")
+
+--========================================
+-- MINI LOGO DRAG FIX
+--========================================
+
+local MiniDragging = false
+local MiniDragMoved = false
+local MiniDragStart
+local MiniStartPosition
+local MiniDragInput
+
+local function UpdateMiniDrag(input)
+    local Delta = input.Position - MiniDragStart
+
+    if math.abs(Delta.X) > 5 or math.abs(Delta.Y) > 5 then
+        MiniDragMoved = true
+    end
+
+    if MiniDragging then
+        Main.Position = UDim2.new(
+            MiniStartPosition.X.Scale,
+            MiniStartPosition.X.Offset + Delta.X,
+            MiniStartPosition.Y.Scale,
+            MiniStartPosition.Y.Offset + Delta.Y
+        )
+    end
+end
+
+LogoButton.InputBegan:Connect(function(Input)
+    if not Main:GetAttribute("Minimized") then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        MiniDragging = true
+        MiniDragMoved = false
+        MiniDragStart = Input.Position
+        MiniStartPosition = Main.Position
+
+        MiniDragInput = Input
+    end
+end)
+
+LogoButton.InputChanged:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        MiniDragInput = Input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+    if Input == MiniDragInput and MiniDragging then
+        UpdateMiniDrag(Input)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        if MiniDragging then
+            MiniDragging = false
+
+            if not MiniDragMoved then
+                Main:SetAttribute("Minimized", false)
+
+                TweenService:Create(
+                    Main,
+                    TweenInfo.new(
+                        0.45,
+                        Enum.EasingStyle.Back,
+                        Enum.EasingDirection.Out
+                    ),
+                    {
+                        Size = FullSize
+                    }
+                ):Play()
+
+                task.delay(0.12, function()
+                    if Main:GetAttribute("Minimized") == false then
+                        SetContentVisible(true)
+
+                        TopBar.Size = UDim2.new(1, 0, 0, 65)
+
+                        LogoButton.Size = UDim2.new(0, 42, 0, 42)
+                        LogoButton.Position = UDim2.new(0, 12, 0.5, -21)
+
+                        Title.Visible = true
+                        Subtitle.Visible = true
+                        MinimizeButton.Visible = true
+                        CloseButton.Visible = true
+                    end
+                end)
+            end
+        end
+    end
+end)
+
+Main:SetAttribute("Minimized", false)
