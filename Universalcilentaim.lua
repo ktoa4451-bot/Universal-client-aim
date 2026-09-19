@@ -1,10 +1,12 @@
 --========================================
 -- UNIVERSAL AIM ASSIST
+-- FULL MENU
 --========================================
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
@@ -19,63 +21,345 @@ local Settings = {
     TeamCheck = true,
     WallCheck = false,
     HitPart = "Head",
-    Smoothness = 0.15,
-    HoldToAim = false,
-    AimKey = Enum.UserInputType.MouseButton2
+    Smoothness = 0.15
 }
 
-local HoldingAim = false
-
 --========================================
--- FOV CIRCLE
+-- GUI
 --========================================
 
-local FOVCircle = Instance.new("Frame")
-FOVCircle.Name = "AimAssistFOV"
-FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
-FOVCircle.Size = UDim2.fromOffset(Settings.FOV * 2, Settings.FOV * 2)
-FOVCircle.Position = UDim2.fromScale(0.5, 0.5)
-FOVCircle.BackgroundTransparency = 1
-FOVCircle.BorderSizePixel = 0
-FOVCircle.Visible = false
-FOVCircle.Parent = LocalPlayer:WaitForChild("PlayerGui")
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "LunarAimAssist"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.fromOffset(300, 390)
+Main.Position = UDim2.new(0.5, -150, 0.5, -195)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 14)
+MainCorner.Parent = Main
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(145, 65, 220)
+MainStroke.Thickness = 1.5
+MainStroke.Parent = Main
+
+--========================================
+-- TITLE BAR
+--========================================
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 48)
+TitleBar.BackgroundTransparency = 1
+TitleBar.Active = true
+TitleBar.Parent = Main
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -100, 1, 0)
+Title.Position = UDim2.fromOffset(15, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "LUNAR AIM ASSIST"
+Title.TextColor3 = Color3.fromRGB(240, 235, 250)
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(1, -100, 0, 16)
+SubTitle.Position = UDim2.fromOffset(15, 29)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = "UNIVERSAL AIM SYSTEM"
+SubTitle.TextColor3 = Color3.fromRGB(145, 125, 165)
+SubTitle.TextSize = 9
+SubTitle.Font = Enum.Font.GothamMedium
+SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+SubTitle.Parent = TitleBar
+
+--========================================
+-- MINIMIZE
+--========================================
+
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.fromOffset(30, 30)
+MinimizeButton.Position = UDim2.new(1, -68, 0, 9)
+MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.Text = "−"
+MinimizeButton.TextColor3 = Color3.fromRGB(220, 210, 235)
+MinimizeButton.TextSize = 20
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.Parent = TitleBar
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.fromOffset(30, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 9)
+CloseButton.BackgroundTransparency = 1
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 90, 110)
+CloseButton.TextSize = 20
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = TitleBar
+
+--========================================
+-- DRAG
+--========================================
+
+local Dragging = false
+local DragStart
+local StartPosition
+
+TitleBar.InputBegan:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        Dragging = true
+        DragStart = input.Position
+        StartPosition = Main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+    if not Dragging then
+        return
+    end
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta = input.Position - DragStart
+
+        Main.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + Delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + Delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        Dragging = false
+    end
+end)
+
+--========================================
+-- CONTENT
+--========================================
+
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, -20, 1, -58)
+Content.Position = UDim2.fromOffset(10, 52)
+Content.BackgroundTransparency = 1
+Content.Parent = Main
+
+--========================================
+-- AIM TOGGLE
+--========================================
+
+local AimButton = Instance.new("TextButton")
+AimButton.Size = UDim2.new(1, 0, 0, 45)
+AimButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+AimButton.BorderSizePixel = 0
+AimButton.Text = "AIM ASSIST     OFF"
+AimButton.TextColor3 = Color3.fromRGB(230, 225, 240)
+AimButton.TextSize = 13
+AimButton.Font = Enum.Font.GothamBold
+AimButton.Parent = Content
+
+local AimCorner = Instance.new("UICorner")
+AimCorner.CornerRadius = UDim.new(0, 9)
+AimCorner.Parent = AimButton
+
+--========================================
+-- FOV
+--========================================
+
+local FOVLabel = Instance.new("TextLabel")
+FOVLabel.Size = UDim2.new(1, 0, 0, 22)
+FOVLabel.Position = UDim2.fromOffset(0, 55)
+FOVLabel.BackgroundTransparency = 1
+FOVLabel.Text = "FOV: 300"
+FOVLabel.TextColor3 = Color3.fromRGB(220, 215, 230)
+FOVLabel.TextSize = 12
+FOVLabel.Font = Enum.Font.GothamMedium
+FOVLabel.TextXAlignment = Enum.TextXAlignment.Left
+FOVLabel.Parent = Content
+
+local MinusButton = Instance.new("TextButton")
+MinusButton.Size = UDim2.fromOffset(125, 35)
+MinusButton.Position = UDim2.fromOffset(0, 80)
+MinusButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+MinusButton.BorderSizePixel = 0
+MinusButton.Text = "−"
+MinusButton.TextColor3 = Color3.fromRGB(235, 230, 245)
+MinusButton.TextSize = 18
+MinusButton.Font = Enum.Font.GothamBold
+MinusButton.Parent = Content
+
+local MinusCorner = Instance.new("UICorner")
+MinusCorner.CornerRadius = UDim.new(0, 8)
+MinusCorner.Parent = MinusButton
+
+local PlusButton = Instance.new("TextButton")
+PlusButton.Size = UDim2.fromOffset(125, 35)
+PlusButton.Position = UDim2.fromOffset(135, 80)
+PlusButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+PlusButton.BorderSizePixel = 0
+PlusButton.Text = "+"
+PlusButton.TextColor3 = Color3.fromRGB(235, 230, 245)
+PlusButton.TextSize = 18
+PlusButton.Font = Enum.Font.GothamBold
+PlusButton.Parent = Content
+
+local PlusCorner = Instance.new("UICorner")
+PlusCorner.CornerRadius = UDim.new(0, 8)
+PlusCorner.Parent = PlusButton
+
+--========================================
+-- TEAM CHECK
+--========================================
+
+local TeamButton = Instance.new("TextButton")
+TeamButton.Size = UDim2.new(1, 0, 0, 38)
+TeamButton.Position = UDim2.fromOffset(0, 125)
+TeamButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+TeamButton.BorderSizePixel = 0
+TeamButton.Text = "TEAM CHECK     ON"
+TeamButton.TextColor3 = Color3.fromRGB(225, 220, 235)
+TeamButton.TextSize = 12
+TeamButton.Font = Enum.Font.GothamMedium
+TeamButton.Parent = Content
+
+local TeamCorner = Instance.new("UICorner")
+TeamCorner.CornerRadius = UDim.new(0, 8)
+TeamCorner.Parent = TeamButton
+
+--========================================
+-- WALL CHECK
+--========================================
+
+local WallButton = Instance.new("TextButton")
+WallButton.Size = UDim2.new(1, 0, 0, 38)
+WallButton.Position = UDim2.fromOffset(0, 170)
+WallButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+WallButton.BorderSizePixel = 0
+WallButton.Text = "WALL CHECK     OFF"
+WallButton.TextColor3 = Color3.fromRGB(225, 220, 235)
+WallButton.TextSize = 12
+WallButton.Font = Enum.Font.GothamMedium
+WallButton.Parent = Content
+
+local WallCorner = Instance.new("UICorner")
+WallCorner.CornerRadius = UDim.new(0, 8)
+WallCorner.Parent = WallButton
+
+--========================================
+-- HIT PART
+--========================================
+
+local HitPartButton = Instance.new("TextButton")
+HitPartButton.Size = UDim2.new(1, 0, 0, 38)
+HitPartButton.Position = UDim2.fromOffset(0, 215)
+HitPartButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+HitPartButton.BorderSizePixel = 0
+HitPartButton.Text = "TARGET PART     HEAD"
+HitPartButton.TextColor3 = Color3.fromRGB(225, 220, 235)
+HitPartButton.TextSize = 12
+HitPartButton.Font = Enum.Font.GothamMedium
+HitPartButton.Parent = Content
+
+local HitCorner = Instance.new("UICorner")
+HitCorner.CornerRadius = UDim.new(0, 8)
+HitCorner.Parent = HitPartButton
+
+--========================================
+-- SMOOTHNESS
+--========================================
+
+local SmoothLabel = Instance.new("TextLabel")
+SmoothLabel.Size = UDim2.new(1, 0, 0, 22)
+SmoothLabel.Position = UDim2.fromOffset(0, 260)
+SmoothLabel.BackgroundTransparency = 1
+SmoothLabel.Text = "SMOOTHNESS: 15%"
+SmoothLabel.TextColor3 = Color3.fromRGB(220, 215, 230)
+SmoothLabel.TextSize = 11
+SmoothLabel.Font = Enum.Font.GothamMedium
+SmoothLabel.TextXAlignment = Enum.TextXAlignment.Left
+SmoothLabel.Parent = Content
+
+local SmoothMinus = Instance.new("TextButton")
+SmoothMinus.Size = UDim2.fromOffset(125, 35)
+SmoothMinus.Position = UDim2.fromOffset(0, 285)
+SmoothMinus.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+SmoothMinus.BorderSizePixel = 0
+SmoothMinus.Text = "−"
+SmoothMinus.TextColor3 = Color3.fromRGB(235, 230, 245)
+SmoothMinus.TextSize = 18
+SmoothMinus.Font = Enum.Font.GothamBold
+SmoothMinus.Parent = Content
+
+local SmoothMinusCorner = Instance.new("UICorner")
+SmoothMinusCorner.CornerRadius = UDim.new(0, 8)
+SmoothMinusCorner.Parent = SmoothMinus
+
+local SmoothPlus = Instance.new("TextButton")
+SmoothPlus.Size = UDim2.fromOffset(125, 35)
+SmoothPlus.Position = UDim2.fromOffset(135, 285)
+SmoothPlus.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
+SmoothPlus.BorderSizePixel = 0
+SmoothPlus.Text = "+"
+SmoothPlus.TextColor3 = Color3.fromRGB(235, 230, 245)
+SmoothPlus.TextSize = 18
+SmoothPlus.Font = Enum.Font.GothamBold
+SmoothPlus.Parent = Content
+
+local SmoothPlusCorner = Instance.new("UICorner")
+SmoothPlusCorner.CornerRadius = UDim.new(0, 8)
+SmoothPlusCorner.Parent = SmoothPlus
+
+--========================================
+-- FOV VISUAL
+--========================================
+
+local FOVFrame = Instance.new("Frame")
+FOVFrame.Name = "VisibleFOV"
+FOVFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+FOVFrame.BackgroundTransparency = 1
+FOVFrame.BorderSizePixel = 0
+FOVFrame.Visible = false
+FOVFrame.ZIndex = 50
+FOVFrame.Parent = ScreenGui
 
 local FOVCorner = Instance.new("UICorner")
 FOVCorner.CornerRadius = UDim.new(1, 0)
-FOVCorner.Parent = FOVCircle
+FOVCorner.Parent = FOVFrame
 
 local FOVStroke = Instance.new("UIStroke")
-FOVStroke.Thickness = 1.5
+FOVStroke.Color = Color3.fromRGB(180, 80, 255)
+FOVStroke.Thickness = 2
 FOVStroke.Transparency = 0.15
-FOVStroke.Color = Color3.fromRGB(190, 80, 255)
-FOVStroke.Parent = FOVCircle
+FOVStroke.Parent = FOVFrame
 
 --========================================
--- HELPERS
+-- AIM FUNCTIONS
 --========================================
 
-local function GetCamera()
-    Camera = workspace.CurrentCamera
-    return Camera
-end
+local function IsFriendly(Player)
 
-local function IsAlive(player)
-    if not player then
-        return false
-    end
-
-    local character = player.Character
-    if not character then
-        return false
-    end
-
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-
-    return humanoid and humanoid.Health > 0
-end
-
-local function IsFriendly(player)
-    if not player or player == LocalPlayer then
+    if Player == LocalPlayer then
         return true
     end
 
@@ -83,279 +367,313 @@ local function IsFriendly(player)
         return false
     end
 
-    if LocalPlayer.Team and player.Team then
-        return LocalPlayer.Team == player.Team
+    if LocalPlayer.Team and Player.Team then
+        return LocalPlayer.Team == Player.Team
     end
 
     return false
 end
 
---========================================
--- WALL CHECK
---========================================
+local function IsAlive(Player)
 
-local function IsVisible(part)
-    local camera = GetCamera()
+    local Character = Player.Character
 
-    if not camera or not part then
+    if not Character then
         return false
     end
 
-    local character = LocalPlayer.Character
+    local Humanoid =
+        Character:FindFirstChildOfClass("Humanoid")
 
-    local origin = camera.CFrame.Position
-    local direction = part.Position - origin
+    return Humanoid and Humanoid.Health > 0
+end
 
-    local params = RaycastParams.new()
-    params.FilterType = Enum.RaycastFilterType.Exclude
-    params.FilterDescendantsInstances = {
-        character
-    }
-    params.IgnoreWater = true
+local function GetPart(Character)
 
-    local result = workspace:Raycast(
-        origin,
-        direction,
-        params
-    )
+    local Part = Character:FindFirstChild(Settings.HitPart)
 
-    if not result then
+    if Part and Part:IsA("BasePart") then
+        return Part
+    end
+
+    return Character:FindFirstChild("HumanoidRootPart")
+end
+
+local function WallCheck(Part)
+
+    if not Settings.WallCheck then
         return true
     end
 
-    return result.Instance:IsDescendantOf(part.Parent)
+    local Character = LocalPlayer.Character
+
+    local Params = RaycastParams.new()
+    Params.FilterType = Enum.RaycastFilterType.Exclude
+    Params.FilterDescendantsInstances = {
+        Character
+    }
+
+    local Origin = Camera.CFrame.Position
+    local Direction = Part.Position - Origin
+
+    local Result =
+        workspace:Raycast(
+            Origin,
+            Direction,
+            Params
+        )
+
+    if not Result then
+        return true
+    end
+
+    return Result.Instance:IsDescendantOf(Part.Parent)
 end
 
---========================================
--- GET TARGET PART
---========================================
+local function GetTarget()
 
-local function GetTargetPart(character)
-    if not character then
+    Camera = workspace.CurrentCamera
+
+    if not Camera then
         return nil
     end
 
-    local preferred = character:FindFirstChild(Settings.HitPart)
+    local Viewport = Camera.ViewportSize
 
-    if preferred and preferred:IsA("BasePart") then
-        return preferred
-    end
-
-    local fallback = character:FindFirstChild("HumanoidRootPart")
-
-    if fallback and fallback:IsA("BasePart") then
-        return fallback
-    end
-
-    return nil
-end
-
---========================================
--- FIND CLOSEST TARGET
---========================================
-
-local function GetClosestTarget()
-    local camera = GetCamera()
-
-    if not camera then
-        return nil
-    end
-
-    local viewport = camera.ViewportSize
-
-    local center = Vector2.new(
-        viewport.X / 2,
-        viewport.Y / 2
+    local Center = Vector2.new(
+        Viewport.X / 2,
+        Viewport.Y / 2
     )
 
-    local closestPlayer = nil
-    local closestPart = nil
-    local closestDistance = Settings.FOV
+    local BestPart = nil
+    local BestDistance = Settings.FOV
 
-    for _, player in ipairs(Players:GetPlayers()) do
+    for _, Player in ipairs(Players:GetPlayers()) do
 
-        if player ~= LocalPlayer
-            and IsAlive(player)
-            and not IsFriendly(player) then
+        if Player ~= LocalPlayer
+            and IsAlive(Player)
+            and not IsFriendly(Player) then
 
-            local character = player.Character
-            local part = GetTargetPart(character)
+            local Character = Player.Character
+            local Part = GetPart(Character)
 
-            if part then
+            if Part then
 
-                local screenPosition, onScreen =
-                    camera:WorldToViewportPoint(part.Position)
-
-                if onScreen and screenPosition.Z > 0 then
-
-                    local screenPoint = Vector2.new(
-                        screenPosition.X,
-                        screenPosition.Y
+                local ScreenPosition, OnScreen =
+                    Camera:WorldToViewportPoint(
+                        Part.Position
                     )
 
-                    local distance =
-                        (screenPoint - center).Magnitude
+                if OnScreen and ScreenPosition.Z > 0 then
 
-                    if distance <= closestDistance then
+                    local Point = Vector2.new(
+                        ScreenPosition.X,
+                        ScreenPosition.Y
+                    )
 
-                        local valid = true
+                    local Distance =
+                        (Point - Center).Magnitude
 
-                        if Settings.WallCheck then
-                            valid = IsVisible(part)
-                        end
+                    if Distance <= BestDistance
+                        and WallCheck(Part) then
 
-                        if valid then
-                            closestDistance = distance
-                            closestPlayer = player
-                            closestPart = part
-                        end
+                        BestDistance = Distance
+                        BestPart = Part
                     end
                 end
             end
         end
     end
 
-    return closestPlayer, closestPart
+    return BestPart
 end
 
 --========================================
--- AIM STATE
---========================================
-
-local function ShouldAim()
-    if not Settings.Enabled then
-        return false
-    end
-
-    if Settings.HoldToAim and not HoldingAim then
-        return false
-    end
-
-    return true
-end
-
---========================================
--- AIM UPDATE
+-- AIM LOOP
 --========================================
 
 RunService.RenderStepped:Connect(function()
 
-    local camera = GetCamera()
+    Camera = workspace.CurrentCamera
 
-    if not camera then
+    if not Camera then
         return
     end
 
-    local viewport = camera.ViewportSize
+    local Viewport = Camera.ViewportSize
 
-    FOVCircle.Position = UDim2.fromOffset(
-        viewport.X / 2,
-        viewport.Y / 2
+    FOVFrame.Position = UDim2.fromOffset(
+        Viewport.X / 2,
+        Viewport.Y / 2
     )
 
-    FOVCircle.Size = UDim2.fromOffset(
+    FOVFrame.Size = UDim2.fromOffset(
         Settings.FOV * 2,
         Settings.FOV * 2
     )
 
-    FOVCircle.Visible = Settings.Enabled
+    FOVFrame.Visible = Settings.Enabled
 
-    if not ShouldAim() then
+    if not Settings.Enabled then
         return
     end
 
-    local _, targetPart = GetClosestTarget()
+    local Target = GetTarget()
 
-    if not targetPart then
+    if not Target then
         return
     end
 
-    local targetPosition = targetPart.Position
-
-    local targetCFrame = CFrame.lookAt(
-        camera.CFrame.Position,
-        targetPosition
-    )
-
-    camera.CFrame = camera.CFrame:Lerp(
-        targetCFrame,
-        math.clamp(Settings.Smoothness, 0.01, 1)
-    )
-end)
-
---========================================
--- INPUT
---========================================
-
-UserInputService.InputBegan:Connect(function(input, processed)
-
-    if processed then
-        return
-    end
-
-    if input.UserInputType == Settings.AimKey then
-        HoldingAim = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-
-    if input.UserInputType == Settings.AimKey then
-        HoldingAim = false
-    end
-end)
-
---========================================
--- PUBLIC CONTROLS
---========================================
-
-getgenv().LunarAimAssist = {
-
-    Toggle = function(state)
-        Settings.Enabled = state == true
-    end,
-
-    SetFOV = function(value)
-        Settings.FOV = math.clamp(
-            tonumber(value) or 300,
-            25,
-            1000
+    local TargetCFrame =
+        CFrame.lookAt(
+            Camera.CFrame.Position,
+            Target.Position
         )
-    end,
 
-    SetSmoothness = function(value)
-        Settings.Smoothness = math.clamp(
-            tonumber(value) or 0.15,
-            0.01,
-            1
+    Camera.CFrame =
+        Camera.CFrame:Lerp(
+            TargetCFrame,
+            Settings.Smoothness
         )
-    end,
+end)
 
-    SetTeamCheck = function(state)
-        Settings.TeamCheck = state == true
-    end,
+--========================================
+-- BUTTONS
+--========================================
 
-    SetWallCheck = function(state)
-        Settings.WallCheck = state == true
-    end,
+AimButton.MouseButton1Click:Connect(function()
 
-    SetHitPart = function(part)
-        if part == "Head"
-            or part == "UpperTorso"
-            or part == "Torso"
-            or part == "HumanoidRootPart" then
+    Settings.Enabled = not Settings.Enabled
 
-            Settings.HitPart = part
-        end
-    end,
+    AimButton.Text =
+        Settings.Enabled
+        and "AIM ASSIST     ON"
+        or "AIM ASSIST     OFF"
 
-    SetHoldToAim = function(state)
-        Settings.HoldToAim = state == true
-    end,
+    FOVFrame.Visible = Settings.Enabled
+end)
 
-    GetSettings = function()
-        return Settings
+MinusButton.MouseButton1Click:Connect(function()
+
+    Settings.FOV =
+        math.max(50, Settings.FOV - 25)
+
+    FOVLabel.Text =
+        "FOV: " .. Settings.FOV
+end)
+
+PlusButton.MouseButton1Click:Connect(function()
+
+    Settings.FOV =
+        math.min(800, Settings.FOV + 25)
+
+    FOVLabel.Text =
+        "FOV: " .. Settings.FOV
+end)
+
+TeamButton.MouseButton1Click:Connect(function()
+
+    Settings.TeamCheck = not Settings.TeamCheck
+
+    TeamButton.Text =
+        "TEAM CHECK     "
+        .. (Settings.TeamCheck and "ON" or "OFF")
+end)
+
+WallButton.MouseButton1Click:Connect(function()
+
+    Settings.WallCheck = not Settings.WallCheck
+
+    WallButton.Text =
+        "WALL CHECK     "
+        .. (Settings.WallCheck and "ON" or "OFF")
+end)
+
+HitPartButton.MouseButton1Click:Connect(function()
+
+    if Settings.HitPart == "Head" then
+        Settings.HitPart = "UpperTorso"
+    elseif Settings.HitPart == "UpperTorso" then
+        Settings.HitPart = "HumanoidRootPart"
+    else
+        Settings.HitPart = "Head"
     end
-}
 
-print("Universal Aim Assist loaded.")
+    HitPartButton.Text =
+        "TARGET PART     "
+        .. string.upper(Settings.HitPart)
+end)
+
+SmoothMinus.MouseButton1Click:Connect(function()
+
+    Settings.Smoothness =
+        math.max(0.05, Settings.Smoothness - 0.05)
+
+    SmoothLabel.Text =
+        "SMOOTHNESS: "
+        .. math.floor(Settings.Smoothness * 100)
+        .. "%"
+end)
+
+SmoothPlus.MouseButton1Click:Connect(function()
+
+    Settings.Smoothness =
+        math.min(1, Settings.Smoothness + 0.05)
+
+    SmoothLabel.Text =
+        "SMOOTHNESS: "
+        .. math.floor(Settings.Smoothness * 100)
+        .. "%"
+end)
+
+--========================================
+-- MINIMIZE
+--========================================
+
+local Minimized = false
+local NormalSize = Main.Size
+
+MinimizeButton.MouseButton1Click:Connect(function()
+
+    Minimized = not Minimized
+
+    if Minimized then
+
+        Content.Visible = false
+        SubTitle.Visible = false
+
+        Main.Size = UDim2.fromOffset(300, 48)
+
+        MinimizeButton.Text = "+"
+
+    else
+
+        Main.Size = NormalSize
+
+        Content.Visible = true
+        SubTitle.Visible = true
+
+        MinimizeButton.Text = "−"
+    end
+end)
+
+--========================================
+-- CLOSE
+--========================================
+
+CloseButton.MouseButton1Click:Connect(function()
+
+    Settings.Enabled = false
+
+    if FOVFrame then
+        FOVFrame:Destroy()
+    end
+
+    ScreenGui:Destroy()
+end)
+
+--========================================
+-- START
+--========================================
+
+print("Lunar Universal Aim Assist loaded.")
