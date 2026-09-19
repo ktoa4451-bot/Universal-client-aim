@@ -1,679 +1,479 @@
---========================================
--- UNIVERSAL AIM ASSIST
--- FULL MENU
---========================================
+--==================================================
+-- SILENT AIM MENU v2
+--==================================================
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
---========================================
--- SETTINGS
---========================================
+--==================================================
+-- НАСТРОЙКИ
+--==================================================
 
 local Settings = {
-    Enabled = false,
+    SilentAim = false,
     FOV = 300,
     TeamCheck = true,
     WallCheck = false,
-    HitPart = "Head",
-    Smoothness = 0.15
+    KillCheck = false,
+    HitPart = "Head"
 }
 
---========================================
--- GUI
---========================================
+--==================================================
+-- ПРОВЕРКА СОЮЗНИКА
+--==================================================
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "LunarAimAssist"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+local function IsFriendly(player)
+    if not player or player == LocalPlayer then return true end
 
-local Main = Instance.new("Frame")
-Main.Size = UDim2.fromOffset(300, 390)
-Main.Position = UDim2.new(0.5, -150, 0.5, -195)
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
-Main.BorderSizePixel = 0
-Main.Active = true
-Main.Parent = ScreenGui
-
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 14)
-MainCorner.Parent = Main
-
-local MainStroke = Instance.new("UIStroke")
-MainStroke.Color = Color3.fromRGB(145, 65, 220)
-MainStroke.Thickness = 1.5
-MainStroke.Parent = Main
-
---========================================
--- TITLE BAR
---========================================
-
-local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1, 0, 0, 48)
-TitleBar.BackgroundTransparency = 1
-TitleBar.Active = true
-TitleBar.Parent = Main
-
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -100, 1, 0)
-Title.Position = UDim2.fromOffset(15, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "LUNAR AIM ASSIST"
-Title.TextColor3 = Color3.fromRGB(240, 235, 250)
-Title.TextSize = 16
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TitleBar
-
-local SubTitle = Instance.new("TextLabel")
-SubTitle.Size = UDim2.new(1, -100, 0, 16)
-SubTitle.Position = UDim2.fromOffset(15, 29)
-SubTitle.BackgroundTransparency = 1
-SubTitle.Text = "UNIVERSAL AIM SYSTEM"
-SubTitle.TextColor3 = Color3.fromRGB(145, 125, 165)
-SubTitle.TextSize = 9
-SubTitle.Font = Enum.Font.GothamMedium
-SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-SubTitle.Parent = TitleBar
-
---========================================
--- MINIMIZE
---========================================
-
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Size = UDim2.fromOffset(30, 30)
-MinimizeButton.Position = UDim2.new(1, -68, 0, 9)
-MinimizeButton.BackgroundTransparency = 1
-MinimizeButton.Text = "−"
-MinimizeButton.TextColor3 = Color3.fromRGB(220, 210, 235)
-MinimizeButton.TextSize = 20
-MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.Parent = TitleBar
-
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.fromOffset(30, 30)
-CloseButton.Position = UDim2.new(1, -35, 0, 9)
-CloseButton.BackgroundTransparency = 1
-CloseButton.Text = "×"
-CloseButton.TextColor3 = Color3.fromRGB(255, 90, 110)
-CloseButton.TextSize = 20
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Parent = TitleBar
-
---========================================
--- DRAG
---========================================
-
-local Dragging = false
-local DragStart
-local StartPosition
-
-TitleBar.InputBegan:Connect(function(input)
-
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-
-        Dragging = true
-        DragStart = input.Position
-        StartPosition = Main.Position
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-
-    if not Dragging then
-        return
-    end
-
-    if input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch then
-
-        local Delta = input.Position - DragStart
-
-        Main.Position = UDim2.new(
-            StartPosition.X.Scale,
-            StartPosition.X.Offset + Delta.X,
-            StartPosition.Y.Scale,
-            StartPosition.Y.Offset + Delta.Y
-        )
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-
-        Dragging = false
-    end
-end)
-
---========================================
--- CONTENT
---========================================
-
-local Content = Instance.new("Frame")
-Content.Size = UDim2.new(1, -20, 1, -58)
-Content.Position = UDim2.fromOffset(10, 52)
-Content.BackgroundTransparency = 1
-Content.Parent = Main
-
---========================================
--- AIM TOGGLE
---========================================
-
-local AimButton = Instance.new("TextButton")
-AimButton.Size = UDim2.new(1, 0, 0, 45)
-AimButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-AimButton.BorderSizePixel = 0
-AimButton.Text = "AIM ASSIST     OFF"
-AimButton.TextColor3 = Color3.fromRGB(230, 225, 240)
-AimButton.TextSize = 13
-AimButton.Font = Enum.Font.GothamBold
-AimButton.Parent = Content
-
-local AimCorner = Instance.new("UICorner")
-AimCorner.CornerRadius = UDim.new(0, 9)
-AimCorner.Parent = AimButton
-
---========================================
--- FOV
---========================================
-
-local FOVLabel = Instance.new("TextLabel")
-FOVLabel.Size = UDim2.new(1, 0, 0, 22)
-FOVLabel.Position = UDim2.fromOffset(0, 55)
-FOVLabel.BackgroundTransparency = 1
-FOVLabel.Text = "FOV: 300"
-FOVLabel.TextColor3 = Color3.fromRGB(220, 215, 230)
-FOVLabel.TextSize = 12
-FOVLabel.Font = Enum.Font.GothamMedium
-FOVLabel.TextXAlignment = Enum.TextXAlignment.Left
-FOVLabel.Parent = Content
-
-local MinusButton = Instance.new("TextButton")
-MinusButton.Size = UDim2.fromOffset(125, 35)
-MinusButton.Position = UDim2.fromOffset(0, 80)
-MinusButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-MinusButton.BorderSizePixel = 0
-MinusButton.Text = "−"
-MinusButton.TextColor3 = Color3.fromRGB(235, 230, 245)
-MinusButton.TextSize = 18
-MinusButton.Font = Enum.Font.GothamBold
-MinusButton.Parent = Content
-
-local MinusCorner = Instance.new("UICorner")
-MinusCorner.CornerRadius = UDim.new(0, 8)
-MinusCorner.Parent = MinusButton
-
-local PlusButton = Instance.new("TextButton")
-PlusButton.Size = UDim2.fromOffset(125, 35)
-PlusButton.Position = UDim2.fromOffset(135, 80)
-PlusButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-PlusButton.BorderSizePixel = 0
-PlusButton.Text = "+"
-PlusButton.TextColor3 = Color3.fromRGB(235, 230, 245)
-PlusButton.TextSize = 18
-PlusButton.Font = Enum.Font.GothamBold
-PlusButton.Parent = Content
-
-local PlusCorner = Instance.new("UICorner")
-PlusCorner.CornerRadius = UDim.new(0, 8)
-PlusCorner.Parent = PlusButton
-
---========================================
--- TEAM CHECK
---========================================
-
-local TeamButton = Instance.new("TextButton")
-TeamButton.Size = UDim2.new(1, 0, 0, 38)
-TeamButton.Position = UDim2.fromOffset(0, 125)
-TeamButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-TeamButton.BorderSizePixel = 0
-TeamButton.Text = "TEAM CHECK     ON"
-TeamButton.TextColor3 = Color3.fromRGB(225, 220, 235)
-TeamButton.TextSize = 12
-TeamButton.Font = Enum.Font.GothamMedium
-TeamButton.Parent = Content
-
-local TeamCorner = Instance.new("UICorner")
-TeamCorner.CornerRadius = UDim.new(0, 8)
-TeamCorner.Parent = TeamButton
-
---========================================
--- WALL CHECK
---========================================
-
-local WallButton = Instance.new("TextButton")
-WallButton.Size = UDim2.new(1, 0, 0, 38)
-WallButton.Position = UDim2.fromOffset(0, 170)
-WallButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-WallButton.BorderSizePixel = 0
-WallButton.Text = "WALL CHECK     OFF"
-WallButton.TextColor3 = Color3.fromRGB(225, 220, 235)
-WallButton.TextSize = 12
-WallButton.Font = Enum.Font.GothamMedium
-WallButton.Parent = Content
-
-local WallCorner = Instance.new("UICorner")
-WallCorner.CornerRadius = UDim.new(0, 8)
-WallCorner.Parent = WallButton
-
---========================================
--- HIT PART
---========================================
-
-local HitPartButton = Instance.new("TextButton")
-HitPartButton.Size = UDim2.new(1, 0, 0, 38)
-HitPartButton.Position = UDim2.fromOffset(0, 215)
-HitPartButton.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-HitPartButton.BorderSizePixel = 0
-HitPartButton.Text = "TARGET PART     HEAD"
-HitPartButton.TextColor3 = Color3.fromRGB(225, 220, 235)
-HitPartButton.TextSize = 12
-HitPartButton.Font = Enum.Font.GothamMedium
-HitPartButton.Parent = Content
-
-local HitCorner = Instance.new("UICorner")
-HitCorner.CornerRadius = UDim.new(0, 8)
-HitCorner.Parent = HitPartButton
-
---========================================
--- SMOOTHNESS
---========================================
-
-local SmoothLabel = Instance.new("TextLabel")
-SmoothLabel.Size = UDim2.new(1, 0, 0, 22)
-SmoothLabel.Position = UDim2.fromOffset(0, 260)
-SmoothLabel.BackgroundTransparency = 1
-SmoothLabel.Text = "SMOOTHNESS: 15%"
-SmoothLabel.TextColor3 = Color3.fromRGB(220, 215, 230)
-SmoothLabel.TextSize = 11
-SmoothLabel.Font = Enum.Font.GothamMedium
-SmoothLabel.TextXAlignment = Enum.TextXAlignment.Left
-SmoothLabel.Parent = Content
-
-local SmoothMinus = Instance.new("TextButton")
-SmoothMinus.Size = UDim2.fromOffset(125, 35)
-SmoothMinus.Position = UDim2.fromOffset(0, 285)
-SmoothMinus.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-SmoothMinus.BorderSizePixel = 0
-SmoothMinus.Text = "−"
-SmoothMinus.TextColor3 = Color3.fromRGB(235, 230, 245)
-SmoothMinus.TextSize = 18
-SmoothMinus.Font = Enum.Font.GothamBold
-SmoothMinus.Parent = Content
-
-local SmoothMinusCorner = Instance.new("UICorner")
-SmoothMinusCorner.CornerRadius = UDim.new(0, 8)
-SmoothMinusCorner.Parent = SmoothMinus
-
-local SmoothPlus = Instance.new("TextButton")
-SmoothPlus.Size = UDim2.fromOffset(125, 35)
-SmoothPlus.Position = UDim2.fromOffset(135, 285)
-SmoothPlus.BackgroundColor3 = Color3.fromRGB(27, 27, 36)
-SmoothPlus.BorderSizePixel = 0
-SmoothPlus.Text = "+"
-SmoothPlus.TextColor3 = Color3.fromRGB(235, 230, 245)
-SmoothPlus.TextSize = 18
-SmoothPlus.Font = Enum.Font.GothamBold
-SmoothPlus.Parent = Content
-
-local SmoothPlusCorner = Instance.new("UICorner")
-SmoothPlusCorner.CornerRadius = UDim.new(0, 8)
-SmoothPlusCorner.Parent = SmoothPlus
-
---========================================
--- FOV VISUAL
---========================================
-
-local FOVFrame = Instance.new("Frame")
-FOVFrame.Name = "VisibleFOV"
-FOVFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-FOVFrame.BackgroundTransparency = 1
-FOVFrame.BorderSizePixel = 0
-FOVFrame.Visible = false
-FOVFrame.ZIndex = 50
-FOVFrame.Parent = ScreenGui
-
-local FOVCorner = Instance.new("UICorner")
-FOVCorner.CornerRadius = UDim.new(1, 0)
-FOVCorner.Parent = FOVFrame
-
-local FOVStroke = Instance.new("UIStroke")
-FOVStroke.Color = Color3.fromRGB(180, 80, 255)
-FOVStroke.Thickness = 2
-FOVStroke.Transparency = 0.15
-FOVStroke.Parent = FOVFrame
-
---========================================
--- AIM FUNCTIONS
---========================================
-
-local function IsFriendly(Player)
-
-    if Player == LocalPlayer then
-        return true
-    end
-
-    if not Settings.TeamCheck then
-        return false
-    end
-
-    if LocalPlayer.Team and Player.Team then
-        return LocalPlayer.Team == Player.Team
+    if Settings.TeamCheck then
+        if LocalPlayer.Team and player.Team then
+            if LocalPlayer.Team == player.Team then
+                return true
+            end
+        end
     end
 
     return false
 end
 
-local function IsAlive(Player)
+--==================================================
+-- ПРОВЕРКА СТЕН
+--==================================================
 
-    local Character = Player.Character
+local function IsVisible(part)
+    if not part or not Camera then return false end
 
-    if not Character then
-        return false
-    end
+    local origin = Camera.CFrame.Position
+    local direction = part.Position - origin
 
-    local Humanoid =
-        Character:FindFirstChildOfClass("Humanoid")
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances = {LocalPlayer.Character}
+    params.IgnoreWater = true
 
-    return Humanoid and Humanoid.Health > 0
-end
+    local result = workspace:Raycast(origin, direction, params)
 
-local function GetPart(Character)
-
-    local Part = Character:FindFirstChild(Settings.HitPart)
-
-    if Part and Part:IsA("BasePart") then
-        return Part
-    end
-
-    return Character:FindFirstChild("HumanoidRootPart")
-end
-
-local function WallCheck(Part)
-
-    if not Settings.WallCheck then
+    if not result then
         return true
     end
 
-    local Character = LocalPlayer.Character
-
-    local Params = RaycastParams.new()
-    Params.FilterType = Enum.RaycastFilterType.Exclude
-    Params.FilterDescendantsInstances = {
-        Character
-    }
-
-    local Origin = Camera.CFrame.Position
-    local Direction = Part.Position - Origin
-
-    local Result =
-        workspace:Raycast(
-            Origin,
-            Direction,
-            Params
-        )
-
-    if not Result then
-        return true
-    end
-
-    return Result.Instance:IsDescendantOf(Part.Parent)
+    return result.Instance:IsDescendantOf(part.Parent)
 end
+
+--==================================================
+-- ПОИСК ЦЕЛИ
+--==================================================
 
 local function GetTarget()
+    if not Camera then return nil end
 
-    Camera = workspace.CurrentCamera
+    local viewport = Camera.ViewportSize
+    local center = Vector2.new(viewport.X / 2, viewport.Y / 2)
 
-    if not Camera then
-        return nil
-    end
+    local bestPlayer, bestPart, bestDist = nil, nil, math.huge
 
-    local Viewport = Camera.ViewportSize
+    for _, player in ipairs(Players:GetPlayers()) do
+        if not IsFriendly(player) then
+            local char = player.Character
 
-    local Center = Vector2.new(
-        Viewport.X / 2,
-        Viewport.Y / 2
-    )
+            if char then
+                local hum = char:FindFirstChildOfClass("Humanoid")
 
-    local BestPart = nil
-    local BestDistance = Settings.FOV
+                if hum and hum.Health > 0 then
+                    local part = char:FindFirstChild(Settings.HitPart)
 
-    for _, Player in ipairs(Players:GetPlayers()) do
+                    if part and part:IsA("BasePart") then
+                        local screenPos, onScreen =
+                            Camera:WorldToViewportPoint(part.Position)
 
-        if Player ~= LocalPlayer
-            and IsAlive(Player)
-            and not IsFriendly(Player) then
+                        if onScreen and screenPos.Z > 0 then
+                            local dist =
+                                (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
 
-            local Character = Player.Character
-            local Part = GetPart(Character)
+                            if dist <= Settings.FOV and dist < bestDist then
+                                local visible = true
 
-            if Part then
+                                if Settings.WallCheck then
+                                    visible = IsVisible(part)
+                                end
 
-                local ScreenPosition, OnScreen =
-                    Camera:WorldToViewportPoint(
-                        Part.Position
-                    )
-
-                if OnScreen and ScreenPosition.Z > 0 then
-
-                    local Point = Vector2.new(
-                        ScreenPosition.X,
-                        ScreenPosition.Y
-                    )
-
-                    local Distance =
-                        (Point - Center).Magnitude
-
-                    if Distance <= BestDistance
-                        and WallCheck(Part) then
-
-                        BestDistance = Distance
-                        BestPart = Part
+                                if visible then
+                                    bestDist = dist
+                                    bestPlayer = player
+                                    bestPart = part
+                                end
+                            end
+                        end
                     end
                 end
             end
         end
     end
 
-    return BestPart
+    return bestPlayer, bestPart
 end
 
---========================================
--- AIM LOOP
---========================================
+--==================================================
+-- ХУК ВЫСТРЕЛА
+--==================================================
 
-RunService.RenderStepped:Connect(function()
+local mt = getrawmetatable(game)
 
-    Camera = workspace.CurrentCamera
+if mt and setreadonly and getnamecallmethod then
+    local oldNamecall = mt.__namecall
 
-    if not Camera then
-        return
+    setreadonly(mt, false)
+
+    mt.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+
+        if Settings.SilentAim
+            and (method == "FireServer" or method == "InvokeServer") then
+
+            local targetPlayer, targetPart = GetTarget()
+
+            if targetPart then
+
+                if Settings.KillCheck then
+                    if targetPlayer and targetPlayer.Character then
+                        local hum =
+                            targetPlayer.Character:FindFirstChildOfClass("Humanoid")
+
+                        if hum and hum.Health <= 0 then
+                            return oldNamecall(self, ...)
+                        end
+                    end
+                end
+
+                for i, arg in ipairs(args) do
+                    if typeof(arg) == "Vector3" then
+                        args[i] = targetPart.Position
+
+                    elseif typeof(arg) == "CFrame" then
+                        args[i] = CFrame.new(targetPart.Position)
+
+                    elseif typeof(arg) == "Instance"
+                        and arg:IsA("BasePart") then
+                        args[i] = targetPart
+                    end
+                end
+            end
+
+            return oldNamecall(self, unpack(args))
+        end
+
+        return oldNamecall(self, ...)
+    end)
+
+    setreadonly(mt, true)
+end
+
+--==================================================
+-- УДАЛЕНИЕ СТАРОГО МЕНЮ
+--==================================================
+
+local ExistingGui = nil
+
+pcall(function()
+    if gethui then
+        ExistingGui = gethui():FindFirstChild("SilentAimMenu")
     end
+end)
 
-    local Viewport = Camera.ViewportSize
+if not ExistingGui then
+    pcall(function()
+        ExistingGui =
+            game:GetService("CoreGui"):FindFirstChild("SilentAimMenu")
+    end)
+end
 
-    FOVFrame.Position = UDim2.fromOffset(
-        Viewport.X / 2,
-        Viewport.Y / 2
-    )
+if not ExistingGui then
+    pcall(function()
+        local PlayerGui =
+            LocalPlayer:FindFirstChildOfClass("PlayerGui")
 
-    FOVFrame.Size = UDim2.fromOffset(
-        Settings.FOV * 2,
-        Settings.FOV * 2
-    )
+        if PlayerGui then
+            ExistingGui =
+                PlayerGui:FindFirstChild("SilentAimMenu")
+        end
+    end)
+end
 
-    FOVFrame.Visible = Settings.Enabled
+if ExistingGui then
+    pcall(function()
+        ExistingGui:Destroy()
+    end)
+end
 
-    if not Settings.Enabled then
-        return
+--==================================================
+-- СОЗДАНИЕ GUI
+--==================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SilentAimMenu"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local GuiParent
+
+pcall(function()
+    if gethui then
+        GuiParent = gethui()
     end
-
-    local Target = GetTarget()
-
-    if not Target then
-        return
-    end
-
-    local TargetCFrame =
-        CFrame.lookAt(
-            Camera.CFrame.Position,
-            Target.Position
-        )
-
-    Camera.CFrame =
-        Camera.CFrame:Lerp(
-            TargetCFrame,
-            Settings.Smoothness
-        )
 end)
 
---========================================
--- BUTTONS
---========================================
+if not GuiParent then
+    pcall(function()
+        GuiParent = game:GetService("CoreGui")
+    end)
+end
 
-AimButton.MouseButton1Click:Connect(function()
+if not GuiParent then
+    GuiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
 
-    Settings.Enabled = not Settings.Enabled
+ScreenGui.Parent = GuiParent
 
-    AimButton.Text =
-        Settings.Enabled
-        and "AIM ASSIST     ON"
-        or "AIM ASSIST     OFF"
+--==================================================
+-- ОСНОВНОЕ ОКНО
+--==================================================
 
-    FOVFrame.Visible = Settings.Enabled
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 260, 0, 320)
+Main.Position = UDim2.new(0.5, -130, 0.5, -160)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+Main.Parent = ScreenGui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 12)
+Corner.Parent = Main
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(200, 45, 45)
+Stroke.Thickness = 1.5
+Stroke.Parent = Main
+
+--==================================================
+-- ЗАГОЛОВОК
+--==================================================
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Position = UDim2.new(0, 0, 0, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "Silent Aim"
+Title.TextColor3 = Color3.fromRGB(245, 245, 250)
+Title.TextSize = 18
+Title.Font = Enum.Font.GothamBold
+Title.Parent = Main
+
+--==================================================
+-- TOGGLE
+--==================================================
+
+local function CreateToggle(text, key, yPos)
+
+    local Row = Instance.new("Frame")
+    Row.Size = UDim2.new(1, -20, 0, 35)
+    Row.Position = UDim2.new(0, 10, 0, yPos)
+    Row.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    Row.BorderSizePixel = 0
+    Row.Parent = Main
+
+    local RowCorner = Instance.new("UICorner")
+    RowCorner.CornerRadius = UDim.new(0, 8)
+    RowCorner.Parent = Row
+
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, -70, 1, 0)
+    Label.Position = UDim2.new(0, 10, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(220, 220, 230)
+    Label.TextSize = 13
+    Label.Font = Enum.Font.GothamMedium
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = Row
+
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(0, 50, 0, 24)
+    Btn.Position = UDim2.new(1, -60, 0.5, -12)
+    Btn.BackgroundColor3 =
+        Settings[key]
+        and Color3.fromRGB(200, 45, 45)
+        or Color3.fromRGB(48, 48, 55)
+
+    Btn.BorderSizePixel = 0
+    Btn.Text = Settings[key] and "ON" or "OFF"
+    Btn.TextColor3 = Color3.fromRGB(245, 245, 250)
+    Btn.TextSize = 11
+    Btn.Font = Enum.Font.GothamBold
+    Btn.Parent = Row
+
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 6)
+    BtnCorner.Parent = Btn
+
+    Btn.MouseButton1Click:Connect(function()
+
+        Settings[key] = not Settings[key]
+
+        Btn.Text = Settings[key] and "ON" or "OFF"
+
+        Btn.BackgroundColor3 =
+            Settings[key]
+            and Color3.fromRGB(200, 45, 45)
+            or Color3.fromRGB(48, 48, 55)
+
+    end)
+end
+
+CreateToggle("Silent Aim", "SilentAim", 45)
+CreateToggle("Team Check", "TeamCheck", 85)
+CreateToggle("Wall Check", "WallCheck", 125)
+CreateToggle("Kill Check", "KillCheck", 165)
+
+--==================================================
+-- FOV
+--==================================================
+
+local FOVRow = Instance.new("Frame")
+FOVRow.Size = UDim2.new(1, -20, 0, 50)
+FOVRow.Position = UDim2.new(0, 10, 0, 205)
+FOVRow.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+FOVRow.BorderSizePixel = 0
+FOVRow.Parent = Main
+
+local FOVCorner = Instance.new("UICorner")
+FOVCorner.CornerRadius = UDim.new(0, 8)
+FOVCorner.Parent = FOVRow
+
+local FOVLabel = Instance.new("TextLabel")
+FOVLabel.Size = UDim2.new(1, -20, 0, 20)
+FOVLabel.Position = UDim2.new(0, 10, 0, 2)
+FOVLabel.BackgroundTransparency = 1
+FOVLabel.Text = "FOV: " .. Settings.FOV
+FOVLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
+FOVLabel.TextSize = 12
+FOVLabel.Font = Enum.Font.GothamMedium
+FOVLabel.TextXAlignment = Enum.TextXAlignment.Left
+FOVLabel.Parent = FOVRow
+
+local MinusBtn = Instance.new("TextButton")
+MinusBtn.Size = UDim2.new(0, 30, 0, 22)
+MinusBtn.Position = UDim2.new(0, 10, 0, 24)
+MinusBtn.BackgroundColor3 = Color3.fromRGB(48, 48, 55)
+MinusBtn.BorderSizePixel = 0
+MinusBtn.Text = "-"
+MinusBtn.TextColor3 = Color3.fromRGB(245, 245, 250)
+MinusBtn.TextSize = 14
+MinusBtn.Font = Enum.Font.GothamBold
+MinusBtn.Parent = FOVRow
+
+local MinusCorner = Instance.new("UICorner")
+MinusCorner.CornerRadius = UDim.new(0, 6)
+MinusCorner.Parent = MinusBtn
+
+local PlusBtn = Instance.new("TextButton")
+PlusBtn.Size = UDim2.new(0, 30, 0, 22)
+PlusBtn.Position = UDim2.new(0, 45, 0, 24)
+PlusBtn.BackgroundColor3 = Color3.fromRGB(48, 48, 55)
+PlusBtn.BorderSizePixel = 0
+PlusBtn.Text = "+"
+PlusBtn.TextColor3 = Color3.fromRGB(245, 245, 250)
+PlusBtn.TextSize = 14
+PlusBtn.Font = Enum.Font.GothamBold
+PlusBtn.Parent = FOVRow
+
+local PlusCorner = Instance.new("UICorner")
+PlusCorner.CornerRadius = UDim.new(0, 6)
+PlusCorner.Parent = PlusBtn
+
+MinusBtn.MouseButton1Click:Connect(function()
+    Settings.FOV = math.max(50, Settings.FOV - 25)
+    FOVLabel.Text = "FOV: " .. Settings.FOV
 end)
 
-MinusButton.MouseButton1Click:Connect(function()
-
-    Settings.FOV =
-        math.max(50, Settings.FOV - 25)
-
-    FOVLabel.Text =
-        "FOV: " .. Settings.FOV
+PlusBtn.MouseButton1Click:Connect(function()
+    Settings.FOV = math.min(800, Settings.FOV + 25)
+    FOVLabel.Text = "FOV: " .. Settings.FOV
 end)
 
-PlusButton.MouseButton1Click:Connect(function()
+--==================================================
+-- СВОРАЧИВАНИЕ И ЗАКРЫТИЕ
+--==================================================
 
-    Settings.FOV =
-        math.min(800, Settings.FOV + 25)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.Position = UDim2.new(1, -30, 0, 8)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
+CloseBtn.TextSize = 18
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Parent = Main
 
-    FOVLabel.Text =
-        "FOV: " .. Settings.FOV
-end)
-
-TeamButton.MouseButton1Click:Connect(function()
-
-    Settings.TeamCheck = not Settings.TeamCheck
-
-    TeamButton.Text =
-        "TEAM CHECK     "
-        .. (Settings.TeamCheck and "ON" or "OFF")
-end)
-
-WallButton.MouseButton1Click:Connect(function()
-
-    Settings.WallCheck = not Settings.WallCheck
-
-    WallButton.Text =
-        "WALL CHECK     "
-        .. (Settings.WallCheck and "ON" or "OFF")
-end)
-
-HitPartButton.MouseButton1Click:Connect(function()
-
-    if Settings.HitPart == "Head" then
-        Settings.HitPart = "UpperTorso"
-    elseif Settings.HitPart == "UpperTorso" then
-        Settings.HitPart = "HumanoidRootPart"
-    else
-        Settings.HitPart = "Head"
-    end
-
-    HitPartButton.Text =
-        "TARGET PART     "
-        .. string.upper(Settings.HitPart)
-end)
-
-SmoothMinus.MouseButton1Click:Connect(function()
-
-    Settings.Smoothness =
-        math.max(0.05, Settings.Smoothness - 0.05)
-
-    SmoothLabel.Text =
-        "SMOOTHNESS: "
-        .. math.floor(Settings.Smoothness * 100)
-        .. "%"
-end)
-
-SmoothPlus.MouseButton1Click:Connect(function()
-
-    Settings.Smoothness =
-        math.min(1, Settings.Smoothness + 0.05)
-
-    SmoothLabel.Text =
-        "SMOOTHNESS: "
-        .. math.floor(Settings.Smoothness * 100)
-        .. "%"
-end)
-
---========================================
--- MINIMIZE
---========================================
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+MinimizeBtn.Position = UDim2.new(1, -58, 0, 8)
+MinimizeBtn.BackgroundTransparency = 1
+MinimizeBtn.Text = "−"
+MinimizeBtn.TextColor3 = Color3.fromRGB(220, 220, 230)
+MinimizeBtn.TextSize = 18
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.Parent = Main
 
 local Minimized = false
 local NormalSize = Main.Size
 
-MinimizeButton.MouseButton1Click:Connect(function()
+MinimizeBtn.MouseButton1Click:Connect(function()
 
     Minimized = not Minimized
 
     if Minimized then
 
-        Content.Visible = false
-        SubTitle.Visible = false
+        for _, child in ipairs(Main:GetChildren()) do
 
-        Main.Size = UDim2.fromOffset(300, 48)
+            if child:IsA("GuiObject")
+                and child ~= Corner
+                and child ~= Stroke
+                and child ~= Title
+                and child ~= MinimizeBtn
+                and child ~= CloseBtn then
 
-        MinimizeButton.Text = "+"
+                child.Visible = false
+            end
+        end
+
+        Main.Size = UDim2.new(0, 260, 0, 45)
+        MinimizeBtn.Text = "+"
 
     else
 
         Main.Size = NormalSize
 
-        Content.Visible = true
-        SubTitle.Visible = true
+        for _, child in ipairs(Main:GetChildren()) do
 
-        MinimizeButton.Text = "−"
+            if child:IsA("GuiObject") then
+                child.Visible = true
+            end
+        end
+
+        MinimizeBtn.Visible = true
+        CloseBtn.Visible = true
+        Title.Visible = true
+
+        MinimizeBtn.Text = "−"
     end
 end)
 
---========================================
--- CLOSE
---========================================
-
-CloseButton.MouseButton1Click:Connect(function()
-
-    Settings.Enabled = false
-
-    if FOVFrame then
-        FOVFrame:Destroy()
-    end
-
+CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
---========================================
--- START
---========================================
-
-print("Lunar Universal Aim Assist loaded.")
+print("Silent Aim Menu v2 loaded.")
